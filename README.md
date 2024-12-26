@@ -1,16 +1,7 @@
-# yuda_blog
+## Hi, my name Yuda 🙋‍♂️.
 
-A new Flutter project.
+this my personal web url https://www.yudaferry.my.id/
 
-## Getting Started
+this repo for my personal blog activity or anything that i want to share with you.
 
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Thank you. 🍻
