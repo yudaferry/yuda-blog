@@ -9,28 +9,18 @@ class MainScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final topMargin = MediaQuery.of(context).size.width > 600 ? 16.0 : 8.0;
     return Scaffold(
-      body: Column(
-        children: [
-          Expanded(
-            child: Align(
-              alignment: Alignment.topCenter,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  TitleWidget(),
-                  // SizedBox(height: 16),
-                  // Container(
-                  //   width: 450, // total width for 3 menus
-                  //   child: Divider(thickness: 2),
-                  // ),
-                  SizedBox(height: 16),
-                  TopMenuWidget(),
-                ],
-              ),
-            ),
-          ),
-        ],
+      body: Container(
+        width: double.infinity,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            SizedBox(height: topMargin),
+            TitleWidget(),
+            TopMenuWidget(),
+          ],
+        ),
       ),
     );
   }
