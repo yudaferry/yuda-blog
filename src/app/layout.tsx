@@ -5,10 +5,12 @@ import Link from "next/link";
 
 const ubuntuFont = Ubuntu({
   weight: "400",
+  subsets: ["latin"]
 });
 
 const ubuntuFontMono = Ubuntu_Mono({
   weight: "400",
+  subsets: ["latin"]
 });
 
 export const metadata: Metadata = {
