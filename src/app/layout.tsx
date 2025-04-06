@@ -31,7 +31,7 @@ export default function RootLayout({
       >
 
         <div className="flex flex-col bg-white dark:bg-gray-800 h-screen">
-          <main className="flex-grow flex px-2 md:px-32">
+          <main className="flex-grow flex px-0 md:px-32">
             {children}
           </main>
           {/* <footer className="h-32 flex-shrink flex flex-col items-center justify-center bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400 absolute bottom-0 w-full"> */}
