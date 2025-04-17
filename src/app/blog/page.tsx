@@ -6,13 +6,13 @@ import notionFetchBlog, { TypeNotionBlogs } from "../../../services/notion-fetch
 export default async function Home() {
 
   const blogData = await notionFetchBlog();
-  console.log(JSON.stringify(blogData, null, 2));
   return (
     <main className="flex flex-col md:flex-row md:flex-wrap md:h-fit grow">
       {
         blogData.map((blog: TypeNotionBlogs) => {
 
           // parse as any, because it detected not jsx component
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const PlatformComponent = DeveloperIons[blog.platform as keyof typeof DeveloperIons] as any;
 
           return (
@@ -42,7 +42,7 @@ export default async function Home() {
 }
 
 
-function ArrangeIcons({ icons }: { icons: string[] }) {
+function ArrangeIcons({ icons }: { icons: string[]; }) {
   return (
     <div className="flex gap-2">
       {
@@ -53,7 +53,7 @@ function ArrangeIcons({ icons }: { icons: string[] }) {
             <div key={icon}>
               <IconCompoenent className="size-4" />
             </div>
-          )
+          );
         })
       }
     </div>
