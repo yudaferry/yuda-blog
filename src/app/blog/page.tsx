@@ -1,7 +1,7 @@
 import * as HeroIcons from "@heroicons/react/16/solid";
 import * as DeveloperIons from "developer-icons";
 
-import notionFetchBlog, { TypeNotionBlogs } from "../../../services/notion-fetch-blog";
+import notionFetchBlog, { TypeNotionBlogs } from "./notion-fetch-blog";
 
 export default async function Home() {
 
