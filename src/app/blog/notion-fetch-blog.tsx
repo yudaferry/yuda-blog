@@ -1,4 +1,5 @@
 import { Client } from "@notionhq/client";
+import { DatabaseObjectResponse, PageObjectResponse } from "@notionhq/client/build/src/api-endpoints";
 import moment from "moment";
 
 export type TypeNotionBlogs = {
@@ -23,6 +24,7 @@ export default async function notionFetchBlog(): Promise<TypeNotionBlogs[]> {
     }
   });
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return blogList.results.map((blog: any) => ({
     created_time: moment(blog.created_time).format("YYYY-MM-DD HH:mm"),
     title: blog.properties.Name.title[0].plain_text,
