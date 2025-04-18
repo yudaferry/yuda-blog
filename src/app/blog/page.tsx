@@ -16,11 +16,11 @@ export default async function Home() {
           const PlatformComponent = DeveloperIons[blog.platform as keyof typeof DeveloperIons] as any;
 
           return (
-            <div key={blog.title} className="w-screen md:w-fit  p-4 flex gap-4 md:basis-1/3">
-              <div className="bg-transparent dark:bg-white p-2 rounded-md  self-center">
+            <div key={blog.title} className="w-screen md:w-fit  py-4 px-8 flex gap-4 md:basis-1/3 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700">
+              <div className="bg-transparent dark:bg-white p-2 rounded-md self-center">
                 <PlatformComponent className="size-8" />
               </div>
-              <div className="border-b border-gray-300 dark:border-gray-700 hover:bg-gray-50 transition grow flex flex-col justify-between h-18" >
+              <div className="border-b border-gray-300 dark:border-gray-700 transition grow flex flex-col justify-between h-20" >
                 <div className="text-lg font-medium">
                   {blog.title}
                 </div>

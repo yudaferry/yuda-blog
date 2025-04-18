@@ -3,8 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev:local": "next dev --turbopack",
-    "dev:external": "next dev --turbopack --hostname 192.168.1.4",
+    "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
