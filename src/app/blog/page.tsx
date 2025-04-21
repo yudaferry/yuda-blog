@@ -16,7 +16,9 @@ export default async function Home() {
           const PlatformComponent = DeveloperIons[blog.platform as keyof typeof DeveloperIons] as any;
 
           return (
-            <div key={blog.title} className="w-screen md:w-fit  py-4 px-8 flex gap-4 md:basis-1/3 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700">
+            <div 
+              key={blog.title}
+              className="w-screen md:w-fit py-4 px-8 flex gap-4 md:basis-1/3 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700">
               <div className="bg-transparent dark:bg-white p-2 rounded-md self-center">
                 <PlatformComponent className="size-8" />
               </div>
