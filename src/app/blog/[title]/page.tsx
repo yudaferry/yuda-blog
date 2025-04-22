@@ -6,7 +6,8 @@ import * as HeroIcons from "@heroicons/react/16/solid";
 import * as DeveloperIons from "developer-icons";
 import Link from "next/link";
 
-type BlogDetailProps = {
+// Use the correct Next.js type for page props
+type PageProps = {
   params: {
     title: string;
   };
@@ -141,8 +142,10 @@ async function fetchBlogDetail(title: string): Promise<BlogDetail | null> {
   }
 }
 
-export default async function BlogDetail({ params }: BlogDetailProps) {
-  const blog = await fetchBlogDetail(params.title);
+export default async function BlogDetail({ params }: PageProps) {
+  // Await params before accessing its properties
+  const resolvedParams = await params;
+  const blog = await fetchBlogDetail(resolvedParams.title);
 
   if (!blog) {
     notFound();
