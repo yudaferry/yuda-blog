@@ -180,7 +180,7 @@ function processFormattedText(text: string) {
 export default async function BlogDetail({
   params,
 }: {
-  params: { title: string; };
+  params: any;
 }) {
   // Get the title directly - in Next.js 15 this is no longer a Promise
   const { title } = params;
