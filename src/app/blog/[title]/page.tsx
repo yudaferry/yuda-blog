@@ -6,11 +6,11 @@ import * as HeroIcons from "@heroicons/react/16/solid";
 import * as DeveloperIons from "developer-icons";
 import Link from "next/link";
 
-// Use the correct Next.js type for page props
+// Use the correct Next.js type for page props with Promise params
 type PageProps = {
-  params: {
+  params: Promise<{
     title: string;
-  };
+  }>;
 };
 
 type BlogDetail = TypeNotionBlogs & {
