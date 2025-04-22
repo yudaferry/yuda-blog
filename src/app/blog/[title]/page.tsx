@@ -6,12 +6,7 @@ import * as HeroIcons from "@heroicons/react/16/solid";
 import * as DeveloperIons from "developer-icons";
 import Link from "next/link";
 
-// Use proper Next.js 15 page component types
-interface PageProps {
-  params: { title: string; };
-  searchParams: { [key: string]: string | string[] | undefined; };
-}
-
+// Remove custom PageProps interface and use native Next.js types
 type BlogDetail = TypeNotionBlogs & {
   content: string;
 };
@@ -181,11 +176,14 @@ function processFormattedText(text: string) {
   return processedText;
 }
 
-// Use the proper Next.js 15 page component definition
-export default async function BlogDetail(props: PageProps) {
-  // Await params before accessing its properties
-  const resolvedParams = await props.params;
-  const title = resolvedParams.title;
+// Use the proper Next.js 15 page component definition with proper params typing
+export default async function BlogDetail({
+  params,
+}: {
+  params: { title: string; };
+}) {
+  // Get the title directly - in Next.js 15 this is no longer a Promise
+  const { title } = params;
   const blog = await fetchBlogDetail(title);
 
   if (!blog) {
