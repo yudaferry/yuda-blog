@@ -180,6 +180,7 @@ function processFormattedText(text: string) {
 export default async function BlogDetail({
   params,
 }: {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   params: any;
 }) {
   // Get the title directly - in Next.js 15 this is no longer a Promise
