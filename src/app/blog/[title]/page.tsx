@@ -16,6 +16,55 @@ type BlogDetail = TypeNotionBlogs & {
   content: string;
 };
 
+// Type definitions for Notion API responses
+interface NotionRichText {
+  plain_text: string;
+  annotations?: {
+    bold?: boolean;
+    italic?: boolean;
+    strikethrough?: boolean;
+    underline?: boolean;
+    code?: boolean;
+    color?: string;
+  };
+  href?: string | null;
+}
+
+interface NotionTitle {
+  title: NotionRichText[];
+}
+
+interface NotionMultiSelect {
+  multi_select: Array<{ name: string; }>;
+}
+
+interface NotionRichTextProperty {
+  rich_text: NotionRichText[];
+}
+
+interface NotionProperties {
+  Name: NotionTitle;
+  Icons: NotionMultiSelect;
+  Platform: NotionRichTextProperty;
+  [key: string]: unknown;
+}
+
+interface NotionPage {
+  id: string;
+  created_time: string;
+  properties: NotionProperties;
+}
+
+interface NotionBlock {
+  type: string;
+  paragraph?: { rich_text: NotionRichText[]; };
+  heading_1?: { rich_text: NotionRichText[]; };
+  heading_2?: { rich_text: NotionRichText[]; };
+  heading_3?: { rich_text: NotionRichText[]; };
+  bulleted_list_item?: { rich_text: NotionRichText[]; };
+  numbered_list_item?: { rich_text: NotionRichText[]; };
+}
+
 async function fetchBlogDetail(title: string): Promise<BlogDetail | null> {
   try {
     const decodedTitle = decodeURIComponent(title);
@@ -36,11 +85,12 @@ async function fetchBlogDetail(title: string): Promise<BlogDetail | null> {
     }
 
     // Filter blogs to find one with a matching title (case insensitive)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const matchingBlog = blogList.results.find((blog: any) => {
-      const blogTitle = blog.properties.Name.title[0]?.plain_text || "";
+    const matchingBlog = blogList.results.find((blog) => {
+      const blogPage = blog as unknown as NotionPage;
+      const titleArr = blogPage.properties.Name.title;
+      const blogTitle = titleArr.length > 0 ? titleArr[0].plain_text : "";
       return blogTitle.toLowerCase() === decodedTitle.toLowerCase();
-    });
+    }) as unknown as NotionPage | undefined;
 
     if (!matchingBlog) {
       console.error(`Blog post with title "${decodedTitle}" not found`);
@@ -48,40 +98,41 @@ async function fetchBlogDetail(title: string): Promise<BlogDetail | null> {
     }
 
     // Fetch the page content
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const blockId = (matchingBlog as any).id;
+    const blockId = matchingBlog.id;
     const response = await notion.blocks.children.list({
       block_id: blockId,
     });
 
     // Extract content from blocks (enhanced implementation)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const content = response.results.map((block: any) => {
-      if (block.type === 'paragraph') {
-        if (block.paragraph.rich_text.length > 0) {
-          return block.paragraph.rich_text.map((text: any) => text.plain_text).join('');
-        }
-        return '';
-      } else if (block.type === 'heading_1') {
-        return `# ${block.heading_1.rich_text.map((text: any) => text.plain_text).join('')}`;
-      } else if (block.type === 'heading_2') {
-        return `## ${block.heading_2.rich_text.map((text: any) => text.plain_text).join('')}`;
-      } else if (block.type === 'heading_3') {
-        return `### ${block.heading_3.rich_text.map((text: any) => text.plain_text).join('')}`;
-      } else if (block.type === 'bulleted_list_item') {
-        return `• ${block.bulleted_list_item.rich_text.map((text: any) => text.plain_text).join('')}`;
-      } else if (block.type === 'numbered_list_item') {
-        return `1. ${block.numbered_list_item.rich_text.map((text: any) => text.plain_text).join('')}`;
+    const content = response.results.map((block) => {
+      const typedBlock = block as unknown as NotionBlock;
+
+      const extractText = (richTextArr: NotionRichText[] | undefined): string => {
+        if (!richTextArr || richTextArr.length === 0) return '';
+        return richTextArr.map(text => text.plain_text).join('');
+      };
+
+      if (typedBlock.type === 'paragraph') {
+        return extractText(typedBlock.paragraph?.rich_text);
+      } else if (typedBlock.type === 'heading_1') {
+        return `# ${extractText(typedBlock.heading_1?.rich_text)}`;
+      } else if (typedBlock.type === 'heading_2') {
+        return `## ${extractText(typedBlock.heading_2?.rich_text)}`;
+      } else if (typedBlock.type === 'heading_3') {
+        return `### ${extractText(typedBlock.heading_3?.rich_text)}`;
+      } else if (typedBlock.type === 'bulleted_list_item') {
+        return `• ${extractText(typedBlock.bulleted_list_item?.rich_text)}`;
+      } else if (typedBlock.type === 'numbered_list_item') {
+        return `1. ${extractText(typedBlock.numbered_list_item?.rich_text)}`;
       }
       return '';
-    }).join('\n\n');
+    }).filter(Boolean).join('\n\n');
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return {
-      created_time: moment((matchingBlog as any).created_time).format("YYYY-MM-DD HH:mm"),
-      title: (matchingBlog as any).properties.Name.title[0].plain_text,
-      icons: (matchingBlog as any).properties.Icons.multi_select.map(({ name }: { name: string; }) => name),
-      platform: (matchingBlog as any).properties.Platform.rich_text[0].plain_text,
+      created_time: moment(matchingBlog.created_time).format("YYYY-MM-DD HH:mm"),
+      title: matchingBlog.properties.Name.title[0].plain_text,
+      icons: matchingBlog.properties.Icons.multi_select.map(({ name }) => name),
+      platform: matchingBlog.properties.Platform.rich_text[0].plain_text,
       content
     };
   } catch (error) {
@@ -97,8 +148,8 @@ export default async function BlogDetail({ params }: BlogDetailProps) {
     notFound();
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const PlatformComponent = DeveloperIons[blog.platform as keyof typeof DeveloperIons] as any;
+  // Use type assertion with 'unknown' as intermediate step
+  const PlatformComponent = DeveloperIons[blog.platform as keyof typeof DeveloperIons] as React.ComponentType<{ className: string; }>;
 
   return (
     <main className="max-w-3xl mx-auto px-4 pt-8 pb-32">
@@ -117,7 +168,7 @@ export default async function BlogDetail({ params }: BlogDetailProps) {
             <p className="text-sm text-gray-500">{blog.created_time}</p>
             <div className="flex gap-2">
               {blog.icons.map((icon: string) => {
-                const IconComponent = HeroIcons[icon as keyof typeof HeroIcons];
+                const IconComponent = HeroIcons[icon as keyof typeof HeroIcons] as React.ComponentType<{ className: string; }>;
                 return (
                   <div key={icon}>
                     <IconComponent className="size-4" />
