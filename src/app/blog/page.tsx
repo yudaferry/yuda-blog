@@ -4,6 +4,8 @@ import * as DeveloperIons from "developer-icons";
 import notionFetchBlog, { TypeNotionBlogs } from "./notion-fetch-blog";
 import Link from "next/link";
 
+export const revalidate = 3600;
+
 export default async function Home() {
   const blogData = await notionFetchBlog();
   return (

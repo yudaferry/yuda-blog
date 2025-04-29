@@ -58,7 +58,15 @@ interface NotionBlock {
   heading_3?: { rich_text: NotionRichText[]; };
   bulleted_list_item?: { rich_text: NotionRichText[]; };
   numbered_list_item?: { rich_text: NotionRichText[]; };
+  image?: {
+    type: "file" | "external";
+    file?: { url: string; expiry_time?: string; };
+    external?: { url: string; };
+  };
+  divider?: {}; // Notion's divider block type
 }
+
+export const revalidate = 3600;
 
 async function fetchBlogDetail(title: string): Promise<BlogDetail | null> {
   try {
@@ -102,23 +110,51 @@ async function fetchBlogDetail(title: string): Promise<BlogDetail | null> {
     const content = response.results.map((block) => {
       const typedBlock = block as unknown as NotionBlock;
 
+      // Handle divider blocks
+      if (typedBlock.type === 'divider') {
+        return '<div class="divider"></div>';
+      }
+
+      // Handle image blocks
+      if (typedBlock.type === 'image') {
+        const imageUrl = typedBlock.image?.file?.url || typedBlock.image?.external?.url;
+        if (imageUrl) return `![](${imageUrl})`;
+        return '';
+      }
+
       const extractRichText = (richTextArr: NotionRichText[] | undefined): string => {
         if (!richTextArr || richTextArr.length === 0) return '';
 
         return richTextArr.map(text => {
-          let formattedText = text.plain_text;
+          let content = text.plain_text;
+          const annotations = text.annotations || {};
 
-          // Make sure code annotations are properly detected
-          if (text.annotations?.code) {
-            // Use backticks to mark code
-            formattedText = `\`${formattedText}\``;
+          // Apply text formatting only if annotations exist
+          if (Object.values(annotations).some(val => val)) {
+            const classes = [];
+
+            if (annotations.bold) classes.push('font-bold');
+            if (annotations.italic) classes.push('italic');
+            if (annotations.underline) classes.push('underline');
+            if (annotations.strikethrough) classes.push('line-through');
+            if (annotations.code) classes.push('font-mono bg-gray-100 dark:bg-gray-700 px-1 rounded');
+
+            // Handle color (only if not default)
+            if (annotations.color && annotations.color !== 'default') {
+              const colorClass = getColorClass(annotations.color);
+              if (colorClass) classes.push(colorClass);
+            }
+
+            if (classes.length > 0) {
+              content = `<span class="${classes.join(' ')}">${content}</span>`;
+            }
           }
 
           if (text.href) {
-            formattedText = `[${formattedText}](${text.href})`;
+            content = `[${content}](${text.href})`;
           }
 
-          return formattedText;
+          return content;
         }).join('');
       };
 
@@ -136,14 +172,18 @@ async function fetchBlogDetail(title: string): Promise<BlogDetail | null> {
         return `1. ${extractRichText(typedBlock.numbered_list_item?.rich_text)}`;
       }
       return '';
-    }).filter(Boolean).join('\n\n');
+    }).filter(Boolean)
+      .join('\n\n');
+
+    // Process ALL formatting here on the server
+    const processedContent = processFormattedText(content);
 
     return {
       created_time: moment(matchingBlog.created_time).format("YYYY-MM-DD HH:mm"),
       title: matchingBlog.properties.Name.title[0].plain_text,
       icons: matchingBlog.properties.Icons.multi_select.map(({ name }) => name),
       platform: matchingBlog.properties.Platform.rich_text[0].plain_text,
-      content
+      content: processedContent
     };
   } catch (error) {
     console.error("Error fetching blog detail:", error);
@@ -153,27 +193,60 @@ async function fetchBlogDetail(title: string): Promise<BlogDetail | null> {
 
 // Add this helper function to process text with formatting
 function processFormattedText(text: string) {
-  // First, temporarily replace actual code blocks to prevent conflicts
-  const codeBlocks: string[] = [];
-  let processedText = text.replace(/`([^`]+)`/g, (match, code) => {
-    const placeholder = `__CODE_BLOCK_${codeBlocks.length}__`;
-    codeBlocks.push(code);
-    return placeholder;
-  });
+  // Process dividers first
+  let processedText = text.replace(
+    /<div class="divider"><\/div>/g,
+    '<hr class="my-8 border-t border-gray-200 dark:border-gray-700" />'
+  );
 
-  // Process links with format [text](url)
-  const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
-  processedText = processedText.replace(linkRegex, (match, linkText, url) => {
-    return `<a href="${url}" class="text-blue-700 dark:text-blue-400 hover:underline" target="_blank" rel="noopener noreferrer">${linkText}</a>`;
-  });
+  // Process images
+  processedText = processedText.replace(/!\[([^\]]*)\]\(([^)]+)\)/g,
+    '<div class="flex justify-center my-4"><img src="$2" alt="$1" class="rounded-lg max-w-full" /></div>'
+  );
 
-  // Re-insert code blocks with proper HTML
-  processedText = processedText.replace(/__CODE_BLOCK_(\d+)__/g, (match, index) => {
-    const code = codeBlocks[parseInt(index)];
-    return `<code class="bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded font-mono text-sm border border-gray-200 dark:border-gray-600">${code}</code>`;
-  });
+  // Process links
+  processedText = processedText.replace(/\[([^\]]+)\]\(([^)]+)\)/g,
+    '<a href="$2" class="text-blue-600 dark:text-blue-400 hover:underline">$1</a>'
+  );
+
+  // Process headings (keep your existing heading classes)
+  processedText = processedText
+    .replace(/^# (.*$)/gm, '<h1 class="text-3xl font-bold mt-8 mb-4">$1</h1>')
+    .replace(/^## (.*$)/gm, '<h2 class="text-2xl font-bold mt-6 mb-3">$1</h2>')
+    .replace(/^### (.*$)/gm, '<h3 class="text-xl font-bold mt-4 mb-2">$1</h3>');
+
+  // Process lists (keep your existing list classes)
+  processedText = processedText
+    .replace(/^• (.*$)/gm, '<li class="pl-4 my-2 flex"><span class="mr-2">•</span><span>$1</span></li>')
+    .replace(/^\d+\. (.*$)/gm, '<li class="pl-4 my-2 flex"><span class="mr-2 font-medium">$&</span></li>');
+
+  // Process paragraphs
+  processedText = processedText
+    .split('\n')
+    .filter(line => line.trim() !== '')
+    .map(line => {
+      if (line.startsWith('<')) return line;
+      return `<p class="my-3">${line}</p>`;
+    })
+    .join('\n');
 
   return processedText;
+}
+
+// Specific color mapping function
+function getColorClass(color: string): string {
+  const colorMap: Record<string, string> = {
+    'gray': 'text-gray-600 dark:text-gray-400',
+    'brown': 'text-amber-600 dark:text-amber-300',
+    'orange': 'text-orange-500 dark:text-orange-400',
+    'yellow': 'text-yellow-500 dark:text-yellow-400',
+    'green': 'text-green-500 dark:text-green-400',
+    'blue': 'text-blue-500 dark:text-blue-400',
+    'purple': 'text-purple-500 dark:text-purple-400',
+    'pink': 'text-pink-500 dark:text-pink-400',
+    'red': 'text-red-500 dark:text-red-400'
+  };
+  return colorMap[color] || '';
 }
 
 // Use the proper Next.js 15 page component definition with proper params typing
@@ -184,7 +257,7 @@ export default async function BlogDetail({
   params: any;
 }) {
   // Get the title directly - in Next.js 15 this is no longer a Promise
-  const { title } = params;
+  const { title } = await params;
   const blog = await fetchBlogDetail(title);
 
   if (!blog) {
@@ -224,55 +297,7 @@ export default async function BlogDetail({
       </div>
 
       <article className="prose dark:prose-invert max-w-none">
-        {blog.content.split('\n\n').map((paragraph, index) => {
-          // Process paragraph content for links and code
-          const processedContent = processFormattedText(paragraph);
-
-          // Handle basic formatting with Tailwind classes
-          if (paragraph.startsWith('# ')) {
-            return (
-              <div
-                key={index}
-                className="text-3xl font-bold mt-6 mb-4"
-                dangerouslySetInnerHTML={{ __html: processedContent.substring(2) }}
-              />
-            );
-          } else if (paragraph.startsWith('## ')) {
-            return (
-              <div
-                key={index}
-                className="text-2xl font-bold mt-5 mb-3"
-                dangerouslySetInnerHTML={{ __html: processedContent.substring(3) }}
-              />
-            );
-          } else if (paragraph.startsWith('### ')) {
-            return (
-              <div
-                key={index}
-                className="text-xl font-bold mt-4 mb-2"
-                dangerouslySetInnerHTML={{ __html: processedContent.substring(4) }}
-              />
-            );
-          } else if (paragraph.startsWith('• ')) {
-            return (
-              <div key={index} className="pl-4 my-2 flex">
-                <span className="mr-2">•</span>
-                <span dangerouslySetInnerHTML={{ __html: processedContent.substring(2) }} />
-              </div>
-            );
-          } else if (/^\d+\.\s/.test(paragraph)) {
-            const num = paragraph.substring(0, paragraph.indexOf('.'));
-            return (
-              <div key={index} className="pl-4 my-2 flex">
-                <span className="mr-2 font-medium">{num}.</span>
-                <span dangerouslySetInnerHTML={{
-                  __html: processedContent.substring(processedContent.indexOf(' ') + 1)
-                }} />
-              </div>
-            );
-          }
-          return <p key={index} className="my-3" dangerouslySetInnerHTML={{ __html: processedContent }} />;
-        })}
+        <div dangerouslySetInnerHTML={{ __html: blog.content }} />
       </article>
     </main>
   );
