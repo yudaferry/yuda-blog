@@ -63,7 +63,7 @@ interface NotionBlock {
     file?: { url: string; expiry_time?: string; };
     external?: { url: string; };
   };
-  divider?: {}; // Notion's divider block type
+  divider?: object; // Fixed empty object type
 }
 
 export const revalidate = 3600;
