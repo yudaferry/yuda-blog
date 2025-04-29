@@ -112,7 +112,7 @@ async function fetchBlogDetail(title: string): Promise<BlogDetail | null> {
 
       // Handle divider blocks
       if (typedBlock.type === 'divider') {
-        return '<div class="divider"></div>';
+        return '<hr class="my-8 border-t border-gray-200 dark:border-gray-700" />';
       }
 
       // Handle image blocks
@@ -126,23 +126,20 @@ async function fetchBlogDetail(title: string): Promise<BlogDetail | null> {
         if (!richTextArr || richTextArr.length === 0) return '';
 
         return richTextArr.map(text => {
-          let content = text.plain_text;
+          let content = text.plain_text.replace(/\n/g, '<br>');
           const annotations = text.annotations || {};
 
-          // Apply text formatting only if annotations exist
+          // Apply inline formatting only
           if (Object.values(annotations).some(val => val)) {
             const classes = [];
-
             if (annotations.bold) classes.push('font-bold');
             if (annotations.italic) classes.push('italic');
             if (annotations.underline) classes.push('underline');
             if (annotations.strikethrough) classes.push('line-through');
             if (annotations.code) classes.push('font-mono bg-gray-100 dark:bg-gray-700 px-1 rounded');
 
-            // Handle color (only if not default)
             if (annotations.color && annotations.color !== 'default') {
-              const colorClass = getColorClass(annotations.color);
-              if (colorClass) classes.push(colorClass);
+              classes.push(getColorClass(annotations.color));
             }
 
             if (classes.length > 0) {
@@ -193,39 +190,42 @@ async function fetchBlogDetail(title: string): Promise<BlogDetail | null> {
 
 // Add this helper function to process text with formatting
 function processFormattedText(text: string) {
-  // Process dividers first
-  let processedText = text.replace(
-    /<div class="divider"><\/div>/g,
-    '<hr class="my-8 border-t border-gray-200 dark:border-gray-700" />'
-  );
+  // Process headings FIRST to prevent interference
+  let processedText = text
+    .replace(/^# (.*$)/gm, '\n<h1 class="text-3xl font-bold mt-8 mb-4">$1</h1>\n')
+    .replace(/^## (.*$)/gm, '\n<h2 class="text-2xl font-bold mt-6 mb-3">$1</h2>\n')
+    .replace(/^### (.*$)/gm, '\n<h3 class="text-xl font-bold mt-4 mb-2">$1</h3>\n');
 
-  // Process images
-  processedText = processedText.replace(/!\[([^\]]*)\]\(([^)]+)\)/g,
-    '<div class="flex justify-center my-4"><img src="$2" alt="$1" class="rounded-lg max-w-full" /></div>'
-  );
-
-  // Process links
-  processedText = processedText.replace(/\[([^\]]+)\]\(([^)]+)\)/g,
-    '<a href="$2" class="text-blue-600 dark:text-blue-400 hover:underline">$1</a>'
-  );
-
-  // Process headings (keep your existing heading classes)
+  // Then process other elements
   processedText = processedText
-    .replace(/^# (.*$)/gm, '<h1 class="text-3xl font-bold mt-8 mb-4">$1</h1>')
-    .replace(/^## (.*$)/gm, '<h2 class="text-2xl font-bold mt-6 mb-3">$1</h2>')
-    .replace(/^### (.*$)/gm, '<h3 class="text-xl font-bold mt-4 mb-2">$1</h3>');
+    // Dividers
+    .replace(/<div class="divider"><\/div>/g,
+      '<hr class="my-8 border-t border-gray-200 dark:border-gray-700" />'
+    )
+    // Images
+    .replace(/!\[([^\]]*)\]\(([^)]+)\)/g,
+      '\n<div class="flex justify-center my-4"><img src="$2" alt="$1" class="rounded-lg max-w-full" /></div>\n'
+    )
+    // Links
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g,
+      '<a href="$2" class="text-blue-600 dark:text-blue-400 hover:underline">$1</a>'
+    )
+    // Lists
+    .replace(/^• (.*$)/gm, '\n<li class="pl-4 my-2 flex"><span class="mr-2">•</span><span>$1</span></li>\n')
+    .replace(/^\d+\. (.*$)/gm, '\n<li class="pl-4 my-2 flex"><span class="mr-2 font-medium">$&</span></li>\n');
 
-  // Process lists (keep your existing list classes)
-  processedText = processedText
-    .replace(/^• (.*$)/gm, '<li class="pl-4 my-2 flex"><span class="mr-2">•</span><span>$1</span></li>')
-    .replace(/^\d+\. (.*$)/gm, '<li class="pl-4 my-2 flex"><span class="mr-2 font-medium">$&</span></li>');
-
-  // Process paragraphs
+  // Handle paragraphs - skip already processed elements
   processedText = processedText
     .split('\n')
     .filter(line => line.trim() !== '')
     .map(line => {
-      if (line.startsWith('<')) return line;
+      if (line.startsWith('<') &&
+        (line.startsWith('<h') ||
+          line.startsWith('<li') ||
+          line.startsWith('<div') ||
+          line.startsWith('<hr'))) {
+        return line;
+      }
       return `<p class="my-3">${line}</p>`;
     })
     .join('\n');
