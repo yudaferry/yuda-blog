@@ -5,8 +5,6 @@ import { TypeNotionBlogs } from "../notion-fetch-blog";
 import * as HeroIcons from "@heroicons/react/16/solid";
 import * as DeveloperIons from "developer-icons";
 import Link from "next/link";
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 // Remove custom PageProps interface and use native Next.js types
 type BlogDetail = TypeNotionBlogs & {
@@ -106,7 +104,7 @@ async function fetchBlogDetail(title: string): Promise<BlogDetail | null> {
 
     // Fetch the page content with pagination
     const blockId = matchingBlog.id;
-    let allBlocks: any[] = [];
+    let allBlocks: unknown[] = [];
     let hasMore = true;
     let nextCursor: string | undefined;
 
@@ -214,7 +212,7 @@ async function fetchBlogDetail(title: string): Promise<BlogDetail | null> {
 // Add this helper function to process text with formatting
 function processFormattedText(text: string) {
   // Process code blocks FIRST to prevent interference
-  let processedText = text.replace(/```([^\n]*?)\n([\s\S]*?)\n```/g, (match, language, code) => {
+  let processedText = text.replace(/```([^\n]*?)\n([\s\S]*?)\n```/g, (_, language, code) => {
     const lang = language?.trim() || 'text';
     return `<pre class="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto my-4"><code class="language-${lang}">${code.trim()}</code></pre>`;
   });
