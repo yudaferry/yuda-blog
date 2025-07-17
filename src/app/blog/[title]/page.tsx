@@ -5,6 +5,8 @@ import { TypeNotionBlogs } from "../notion-fetch-blog";
 import * as HeroIcons from "@heroicons/react/16/solid";
 import * as DeveloperIons from "developer-icons";
 import Link from "next/link";
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 // Remove custom PageProps interface and use native Next.js types
 type BlogDetail = TypeNotionBlogs & {
@@ -58,6 +60,8 @@ interface NotionBlock {
   heading_3?: { rich_text: NotionRichText[]; };
   bulleted_list_item?: { rich_text: NotionRichText[]; };
   numbered_list_item?: { rich_text: NotionRichText[]; };
+  to_do?: { rich_text: NotionRichText[]; checked: boolean; };
+  code?: { rich_text: NotionRichText[]; language: string; };
   image?: {
     type: "file" | "external";
     file?: { url: string; expiry_time?: string; };
@@ -66,7 +70,7 @@ interface NotionBlock {
   divider?: object; // Fixed empty object type
 }
 
-export const revalidate = 3600;
+export const revalidate = 300; // 5 minutes
 
 async function fetchBlogDetail(title: string): Promise<BlogDetail | null> {
   try {
@@ -100,14 +104,26 @@ async function fetchBlogDetail(title: string): Promise<BlogDetail | null> {
       return null;
     }
 
-    // Fetch the page content
+    // Fetch the page content with pagination
     const blockId = matchingBlog.id;
-    const response = await notion.blocks.children.list({
-      block_id: blockId,
-    });
+    let allBlocks: any[] = [];
+    let hasMore = true;
+    let nextCursor: string | undefined;
+
+    while (hasMore) {
+      const response = await notion.blocks.children.list({
+        block_id: blockId,
+        start_cursor: nextCursor,
+        page_size: 100,
+      });
+
+      allBlocks = allBlocks.concat(response.results);
+      hasMore = response.has_more;
+      nextCursor = response.next_cursor || undefined;
+    }
 
     // Extract content from blocks with enhanced formatting
-    const content = response.results.map((block) => {
+    const content = allBlocks.map((block) => {
       const typedBlock = block as unknown as NotionBlock;
 
       // Handle divider blocks
@@ -167,6 +183,13 @@ async function fetchBlogDetail(title: string): Promise<BlogDetail | null> {
         return `• ${extractRichText(typedBlock.bulleted_list_item?.rich_text)}`;
       } else if (typedBlock.type === 'numbered_list_item') {
         return `1. ${extractRichText(typedBlock.numbered_list_item?.rich_text)}`;
+      } else if (typedBlock.type === 'to_do') {
+        const checked = typedBlock.to_do?.checked ? '☑' : '☐';
+        return `${checked} ${extractRichText(typedBlock.to_do?.rich_text)}`;
+      } else if (typedBlock.type === 'code') {
+        const language = typedBlock.code?.language || 'text';
+        const codeContent = extractRichText(typedBlock.code?.rich_text);
+        return `\`\`\`${language}\n${codeContent}\n\`\`\``;
       }
       return '';
     }).filter(Boolean)
@@ -190,8 +213,14 @@ async function fetchBlogDetail(title: string): Promise<BlogDetail | null> {
 
 // Add this helper function to process text with formatting
 function processFormattedText(text: string) {
+  // Process code blocks FIRST to prevent interference
+  let processedText = text.replace(/```([^\n]*?)\n([\s\S]*?)\n```/g, (match, language, code) => {
+    const lang = language?.trim() || 'text';
+    return `<pre class="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto my-4"><code class="language-${lang}">${code.trim()}</code></pre>`;
+  });
+
   // Process headings FIRST to prevent interference
-  let processedText = text
+  processedText = processedText
     .replace(/^# (.*$)/gm, '\n<h1 class="text-3xl font-bold mt-8 mb-4">$1</h1>\n')
     .replace(/^## (.*$)/gm, '\n<h2 class="text-2xl font-bold mt-6 mb-3">$1</h2>\n')
     .replace(/^### (.*$)/gm, '\n<h3 class="text-xl font-bold mt-4 mb-2">$1</h3>\n');
@@ -210,6 +239,9 @@ function processFormattedText(text: string) {
     .replace(/\[([^\]]+)\]\(([^)]+)\)/g,
       '<a href="$2" class="text-blue-600 dark:text-blue-400 hover:underline">$1</a>'
     )
+    // To-do checkboxes with green checkmark emoji
+    .replace(/^☑ (.*$)/gm, '\n<div class="flex items-center my-2"><span class="mr-2 text-green-500 text-lg">✅</span><span>$1</span></div>\n')
+    .replace(/^☐ (.*$)/gm, '\n<div class="flex items-center my-2"><span class="mr-2 text-gray-400 text-lg">⬜</span><span>$1</span></div>\n')
     // Lists
     .replace(/^• (.*$)/gm, '\n<li class="pl-4 my-2 flex"><span class="mr-2">•</span><span>$1</span></li>\n')
     .replace(/^\d+\. (.*$)/gm, '\n<li class="pl-4 my-2 flex"><span class="mr-2 font-medium">$&</span></li>\n');
@@ -223,6 +255,7 @@ function processFormattedText(text: string) {
         (line.startsWith('<h') ||
           line.startsWith('<li') ||
           line.startsWith('<div') ||
+          line.startsWith('<pre') ||
           line.startsWith('<hr'))) {
         return line;
       }
@@ -276,7 +309,13 @@ export default async function BlogDetail({
 
       <div className="flex items-center gap-4 mb-8">
         <div className="bg-transparent dark:bg-white p-3 rounded-md">
-          <PlatformComponent className="size-10" />
+          {PlatformComponent ? (
+            <PlatformComponent className="size-10" />
+          ) : (
+            <div className="size-10 bg-gray-300 dark:bg-gray-600 rounded flex items-center justify-center">
+              <span className="text-sm">?</span>
+            </div>
+          )}
         </div>
         <div>
           <h1 className="text-2xl font-bold mb-2">{blog.title}</h1>
@@ -287,7 +326,13 @@ export default async function BlogDetail({
                 const IconComponent = HeroIcons[icon as keyof typeof HeroIcons] as React.ComponentType<{ className: string; }>;
                 return (
                   <div key={icon}>
-                    <IconComponent className="size-4" />
+                    {IconComponent ? (
+                      <IconComponent className="size-4" />
+                    ) : (
+                      <div className="size-4 bg-gray-300 dark:bg-gray-600 rounded flex items-center justify-center">
+                        <span className="text-xs">?</span>
+                      </div>
+                    )}
                   </div>
                 );
               })}
@@ -301,4 +346,4 @@ export default async function BlogDetail({
       </article>
     </main>
   );
-} 
+}

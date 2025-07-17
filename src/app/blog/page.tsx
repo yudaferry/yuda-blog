@@ -4,7 +4,7 @@ import * as DeveloperIons from "developer-icons";
 import notionFetchBlog, { TypeNotionBlogs } from "./notion-fetch-blog";
 import Link from "next/link";
 
-export const revalidate = 3600;
+export const revalidate = 300; // 5 minutes
 
 export default async function Home() {
   const blogData = await notionFetchBlog();
@@ -22,7 +22,13 @@ export default async function Home() {
             className="w-screen md:w-fit py-4 px-8 flex gap-4 md:basis-1/3 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700"
           >
             <div className="bg-transparent dark:bg-white p-2 rounded-md self-center">
-              <PlatformComponent className="size-8" />
+              {PlatformComponent ? (
+                <PlatformComponent className="size-8" />
+              ) : (
+                <div className="size-8 bg-gray-300 dark:bg-gray-600 rounded flex items-center justify-center">
+                  <span className="text-xs">?</span>
+                </div>
+              )}
             </div>
             <div className="border-b border-gray-300 dark:border-gray-700 transition grow flex flex-col justify-between h-20">
               <div className="text-lg font-medium">
@@ -48,11 +54,17 @@ function ArrangeIcons({ icons }: { icons: string[]; }) {
   return (
     <div className="flex gap-2">
       {icons.map((icon: string) => {
-        const IconCompoenent = HeroIcons[icon as keyof typeof HeroIcons];
+        const IconComponent = HeroIcons[icon as keyof typeof HeroIcons];
 
         return (
           <div key={icon}>
-            <IconCompoenent className="size-4" />
+            {IconComponent ? (
+              <IconComponent className="size-4" />
+            ) : (
+              <div className="size-4 bg-gray-300 dark:bg-gray-600 rounded flex items-center justify-center">
+                <span className="text-xs">?</span>
+              </div>
+            )}
           </div>
         );
       })}
