@@ -37,7 +37,8 @@ export default function RootLayout({
             <div className="flex flex-col mb-0 md:mb-6 md:flex-row justify-around items-center">
               <ul className="flex justify-center font-bold mb-10 md:mb-0">
                 <li className="underline pr-8"><Link href="/">Home</Link></li>
-                <li className="underline"><Link href="/blog">Blog</Link></li>
+                <li className="underline pr-8"><Link href="/blog">Blog</Link></li>
+                <li className="underline"><Link href="/profile">Profile</Link></li>
               </ul>
               <div className="mb-2 flex">
                 <Link className="mr-8" target="_blank" href="https://github.com/yudaferry">
