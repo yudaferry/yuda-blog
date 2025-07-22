@@ -9,7 +9,12 @@
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "clean": "pnpm dlx rimraf node_modules .next",
-    "fresh-install": "pnpm clean && pnpm install"
+    "fresh-install": "pnpm clean && pnpm install",
+    "deploy": "pnpm dlx vercel --prod",
+    "deploy:preview": "pnpm dlx vercel",
+    "deployments": "pnpm dlx vercel ls",
+    "deployment:logs": "pnpm dlx vercel logs",
+    "deployment:inspect": "pnpm dlx vercel inspect"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
