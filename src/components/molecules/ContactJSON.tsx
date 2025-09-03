@@ -1,4 +1,5 @@
 import type { ContactInfo } from '../types/profile';
+import TranslatedText from '../atoms/TranslatedText';
 
 interface ContactJSONProps {
   contact: ContactInfo;
@@ -14,25 +15,25 @@ export default function ContactJSON({ contact }: ContactJSONProps) {
       <div className={punctuationClass}>{'{'}</div>
       <div className="ml-4 space-y-1">
         <div>
-          <span className={fieldClass}>&quot;name&quot;</span>
+          <span className={fieldClass}>&quot;<TranslatedText translationKey="contact.name" namespace="profile" />&quot;</span>
           <span className={punctuationClass}>: </span>
           <span className={valueClass}>&quot;{contact.name}&quot;</span>
           <span className={punctuationClass}>,</span>
         </div>
         <div>
-          <span className={fieldClass}>&quot;role&quot;</span>
+          <span className={fieldClass}>&quot;<TranslatedText translationKey="contact.role" namespace="profile" />&quot;</span>
           <span className={punctuationClass}>: </span>
           <span className={valueClass}>&quot;{contact.role}&quot;</span>
           <span className={punctuationClass}>,</span>
         </div>
         <div>
-          <span className={fieldClass}>&quot;location&quot;</span>
+          <span className={fieldClass}>&quot;<TranslatedText translationKey="contact.location" namespace="profile" />&quot;</span>
           <span className={punctuationClass}>: </span>
           <span className={valueClass}>&quot;{contact.location}&quot;</span>
           <span className={punctuationClass}>,</span>
         </div>
         <div>
-          <span className={fieldClass}>&quot;email&quot;</span>
+          <span className={fieldClass}>&quot;<TranslatedText translationKey="contact.email" namespace="profile" />&quot;</span>
           <span className={punctuationClass}>: </span>
           <span className={valueClass}>&quot;{contact.email}&quot;</span>
           <span className={punctuationClass}>,</span>
@@ -68,7 +69,7 @@ export default function ContactJSON({ contact }: ContactJSONProps) {
           <span className={punctuationClass}>,</span>
         </div>
         <div>
-          <span className={fieldClass}>&quot;experience_years&quot;</span>
+          <span className={fieldClass}>&quot;<TranslatedText translationKey="contact.experience" namespace="profile" />&quot;</span>
           <span className={punctuationClass}>: </span>
           <span className={valueClass}>&quot;{contact.experienceYears}&quot;</span>
         </div>

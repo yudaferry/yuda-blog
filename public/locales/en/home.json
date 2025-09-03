@@ -1,0 +1,11 @@
+{
+  "profile": {
+    "name": "Yuda F.M",
+    "altText": "Profile picture",
+    "yearsLabel": "y",
+    "softwareEngineer": "software engineer",
+    "nodejsEnv": "use Nodejs env",
+    "reactEnv": "use React env", 
+    "leadTeam": "lead small team"
+  }
+}

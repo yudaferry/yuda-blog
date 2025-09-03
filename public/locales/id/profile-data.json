@@ -1,0 +1,106 @@
+{
+  "contact": {
+    "name": "Yuda Ferry Mahendra",
+    "role": "Arsitek Perangkat Lunak & Pemimpin Tim Engineer",
+    "location": "Surabaya, Jawa Timur, Indonesia",
+    "specialization": "Arsitektur Real-time Offline-first"
+  },
+  "professionalSummary": "Arsitek Perangkat Lunak dan Pemimpin Tim Engineer dengan pertumbuhan progresif 14+ tahun sejak 2010. Spesialisasi dalam merancang dan mengimplementasikan arsitektur real-time offline-first menggunakan Node.js, MongoDB, React Native, dan teknologi web modern. Sejak 2019, saya mengelola, membimbing, dan memandu tim junior dan senior engineer. Rekam jejak terbukti memimpin produk digital POS dan F&B skala besar, dari desain sistem hingga deployment.",
+  "skillCategories": [
+    {
+      "title": "Keahlian Utama",
+      "skills": [
+        {
+          "name": "Node.js",
+          "years": "sejak 2011"
+        },
+        {
+          "name": "ReactJS", 
+          "years": "sejak 2017"
+        },
+        {
+          "name": "MongoDB",
+          "years": "sejak 2019"
+        }
+      ]
+    },
+    {
+      "title": "Teknologi Tambahan",
+      "skills": [
+        { "name": "Layanan AWS" },
+        { "name": "Docker" },
+        { "name": "Kepemimpinan" },
+        { "name": "Manajemen tim" },
+        { "name": "Manajemen tugas" },
+        { "name": "Electron" },
+        { "name": "Flutter" },
+        { "name": "Visual FoxPro" }
+      ]
+    }
+  ],
+  "education": {
+    "degree": "Sarjana Ilmu Komputer",
+    "institution": "UPN \"Veteran\" Jawa Timur",
+    "year": "2013",
+    "description": "Fokus pada dasar-dasar Ilmu Komputer, prinsip rekayasa perangkat lunak, dan arsitektur sistem"
+  },
+  "timeline": [
+    {
+      "year": "2019 - Sekarang",
+      "title": "Manajer Proyek",
+      "company": "PT. WISANIN ARTHA JAYA",
+      "description": "Memimpin pengembangan aplikasi POS skala besar dan sistem pemesanan digital F&B. Mengelola tim beranggotakan 15 orang. Merancang keputusan teknologi stack, desain database, perencanaan UI/UX, dan mengimplementasikan arsitektur real-time offline-first."
+    },
+    {
+      "year": "2015 - 2019",
+      "title": "Analis Sistem/Programmer",
+      "company": "PT. Kedawung Setia Corrugated Carton Box",
+      "description": "Mengelola sistem Visual FoxPro 9 yang ada dan meneliti teknologi modern untuk industri manufaktur. Mengembangkan aplikasi Android dengan Java, mengeksplorasi pengembangan hybrid dengan Ionic dan Angular. Membangun infrastruktur server high-availability dengan Heartbeat dan DRBD, serta membuat solusi otomatisasi termasuk server Telegram BOT dengan Node.js."
+    },
+    {
+      "year": "2015 - 2015",
+      "title": "Full-Stack Developer",
+      "company": "TWMG (The Website Marketing Group)",
+      "description": "Membuat profil web sederhana untuk perusahaan ambertile menggunakan Drupal"
+    },
+    {
+      "year": "2011 - 2015",
+      "title": "Software Engineer",
+      "company": "PT. ITProvent",
+      "description": "Memperluas keahlian dari pengembangan backend Node.js. Mendapat pengalaman dasar dalam server-side JavaScript."
+    },
+    {
+      "year": "2010 - 2011",
+      "title": "Web Programmer",
+      "company": "Web Expert",
+      "description": "Membuat beberapa website dengan PHP, Html, Css, Javascript. Kadang menggunakan Codeigniter dan Cake PHP"
+    }
+  ],
+  "projects": [
+    {
+      "title": "Sistem POS & Pemesanan Digital F&B",
+      "meta": "MongoDB Realm • Node.js • React Native • ReactJS • Electron",
+      "description": "Memimpin arsitektur dan pengembangan aplikasi POS komprehensif dan sistem pemesanan digital F&B. Merancang arsitektur real-time offline-first, pemilihan teknologi stack, desain database, dan perencanaan UI/UX. Solusi full-stack yang mendukung POS mobile dan manajemen pemesanan desktop."
+    },
+    {
+      "title": "Infrastruktur Server High Availability",
+      "meta": "Centos 7 • Heartbeat • DRBD • Linux • Administrasi Sistem",
+      "description": "Meneliti dan mengimplementasikan infrastruktur server aktif-pasif menggunakan teknologi Heartbeat dan DRBD. Membangun sistem fault-tolerant yang memastikan uptime berkelanjutan dan kemampuan failover otomatis untuk operasi manufaktur kritis dan integritas data."
+    },
+    {
+      "title": "Aplikasi Monitoring Mesin Produksi",
+      "meta": "Android Java • Industri Manufaktur",
+      "description": "Mengembangkan aplikasi Android untuk memantau performa dan kuantitas mesin produksi untuk operasi manufaktur. Membuat sistem monitoring real-time untuk melacak efisiensi mesin, metrik output, dan status operasional, meningkatkan pengawasan produksi dan proses pengambilan keputusan."
+    },
+    {
+      "title": "Otomasi Bot Telegram",
+      "meta": "Node.js • Telegram API • Komunikasi Antar-departemen",
+      "description": "Membangun server BOT Telegram menggunakan Node.js untuk mengotomatisasi komunikasi dan workflow antar departemen perusahaan. Menyederhanakan proses internal, notifikasi, dan berbagi data antar tim, meningkatkan efisiensi operasional dan mengurangi overhead komunikasi manual."
+    },
+    {
+      "title": "Server Backend REST API",
+      "meta": "Node.js • CoudhDB",
+      "description": "Mengembangkan layanan REST API untuk beberapa klien enterprise termasuk JJTEL, BAF (Bussan Auto Finance), dan TRANSVISION."
+    }
+  ]
+}

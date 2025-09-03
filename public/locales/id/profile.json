@@ -1,0 +1,33 @@
+{
+  "title": "Profil",
+  "contact": {
+    "name": "Nama",
+    "role": "Posisi",
+    "location": "Lokasi",
+    "email": "Email",
+    "experience": "Pengalaman",
+    "specialization": "Spesialisasi"
+  },
+  "skills": {
+    "title": "Keahlian",
+    "coreExpertise": "Keahlian Utama",
+    "additionalTechnologies": "Teknologi Tambahan",
+    "years": "tahun"
+  },
+  "education": {
+    "title": "Pendidikan",
+    "degree": "Gelar",
+    "institution": "Institusi",
+    "year": "Tahun",
+    "description": "Deskripsi"
+  },
+  "summary": {
+    "title": "Ringkasan Profesional"
+  },
+  "timeline": {
+    "title": "Riwayat Pengalaman"
+  },
+  "projects": {
+    "title": "Proyek"
+  }
+}

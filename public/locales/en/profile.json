@@ -1,0 +1,33 @@
+{
+  "title": "Profile",
+  "contact": {
+    "name": "Name",
+    "role": "Role",
+    "location": "Location",
+    "email": "Email",
+    "experience": "Experience",
+    "specialization": "Specialization"
+  },
+  "skills": {
+    "title": "Skills",
+    "coreExpertise": "Core Expertise",
+    "additionalTechnologies": "Additional Technologies",
+    "years": "years"
+  },
+  "education": {
+    "title": "Education",
+    "degree": "Degree",
+    "institution": "Institution",
+    "year": "Year",
+    "description": "Description"
+  },
+  "summary": {
+    "title": "Professional Summary"
+  },
+  "timeline": {
+    "title": "Experience Timeline"
+  },
+  "projects": {
+    "title": "Projects"
+  }
+}

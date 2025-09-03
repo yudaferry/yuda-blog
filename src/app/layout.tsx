@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import { Ubuntu, Ubuntu_Mono } from "next/font/google";
 import "./globals.css";
 import Link from "next/link";
+import LanguageToggle from '../components/atoms/LanguageToggle';
+import TranslatedLink from '../components/atoms/TranslatedLink';
+import ClientI18nProvider from '../components/ClientI18nProvider';
 
 const ubuntuFont = Ubuntu({
   weight: "400",
@@ -29,18 +32,27 @@ export default function RootLayout({
       <body
         className={`${ubuntuFont.className} ${ubuntuFontMono.className} antialiased`}
       >
-        <div className="flex flex-col bg-white dark:bg-gray-800 h-screen overflow-hidden">
-          <main className="flex-grow flex px-0 md:px-32 overflow-y-auto mb-32">
-            {children}
-          </main>
+        <ClientI18nProvider>
+          <div className="flex flex-col bg-white dark:bg-gray-800 h-screen overflow-hidden">
+            <main className="flex-grow flex px-0 md:px-32 overflow-y-auto mb-32">
+              {children}
+            </main>
           <footer className="h-32 md:h-24 pt-4 flex flex-col bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400 fixed bottom-0 w-full">
             <div className="flex flex-col mb-0 md:mb-6 md:flex-row justify-around items-center">
               <ul className="flex justify-center font-bold mb-10 md:mb-0">
-                <li className="underline pr-8"><Link href="/">Home</Link></li>
-                <li className="underline pr-8"><Link href="/blog">Blog</Link></li>
-                <li className="underline"><Link href="/profile">Profile</Link></li>
+                <li className="underline pr-8">
+                  <TranslatedLink href="/" translationKey="navigation.home" />
+                </li>
+                <li className="underline pr-8">
+                  <TranslatedLink href="/blog" translationKey="navigation.blog" />
+                </li>
+                <li className="underline">
+                  <TranslatedLink href="/profile" translationKey="navigation.profile" />
+                </li>
               </ul>
-              <div className="mb-2 flex">
+              <div className="flex items-center gap-4 mb-2">
+                <LanguageToggle />
+                <div className="flex">
                 <Link className="mr-8" target="_blank" href="https://github.com/yudaferry">
                   {/* github icon by Free Icons (https://free-icons.github.io/free-icons/) */}
                   <svg xmlns="http://www.w3.org/2000/svg" height="1em" fill="currentColor" viewBox="0 0 512 512">
@@ -73,13 +85,15 @@ export default function RootLayout({
                     />
                   </svg>
                 </Link>
+                </div>
               </div>
             </div>
             <p className="text-xs text-center text-gray-400 dark:text-gray-900">
               &copy; {year} yudaferry.my.id<br />
             </p>
           </footer>
-        </div>
+          </div>
+        </ClientI18nProvider>
       </body>
     </html>
   );

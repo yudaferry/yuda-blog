@@ -1,0 +1,15 @@
+{
+  "navigation": {
+    "home": "Beranda",
+    "blog": "Blog",
+    "profile": "Profil"
+  },
+  "language": {
+    "switch": "Ganti Bahasa",
+    "english": "English",
+    "indonesian": "Bahasa Indonesia"
+  },
+  "footer": {
+    "copyright": "© {{year}} Yuda Ferry Mahendra. Seluruh hak cipta."
+  }
+}
