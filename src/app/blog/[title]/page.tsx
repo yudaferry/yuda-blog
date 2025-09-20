@@ -60,6 +60,7 @@ interface NotionBlock {
   numbered_list_item?: { rich_text: NotionRichText[]; };
   to_do?: { rich_text: NotionRichText[]; checked: boolean; };
   code?: { rich_text: NotionRichText[]; language: string; };
+  quote?: { rich_text: NotionRichText[]; };
   image?: {
     type: "file" | "external";
     file?: { url: string; expiry_time?: string; };
@@ -103,7 +104,7 @@ async function fetchBlogDetail(title: string): Promise<BlogDetail | null> {
     if (!matchingBlog) {
       console.error(`Blog post with title "${decodedTitle}" not found`);
       // Log available titles for debugging
-      const titles = blogList.results.map((blog: any) => {
+      const titles = blogList.results.map((blog: unknown) => {
         const blogPage = blog as unknown as NotionPage;
         const titleArr = blogPage.properties.Name.title;
         return titleArr.length > 0 ? titleArr[0].plain_text : "Untitled";
@@ -133,20 +134,23 @@ async function fetchBlogDetail(title: string): Promise<BlogDetail | null> {
     }
     
     // Recursively fetch children for blocks that have them and insert them in the right place
-    const processBlocks = async (blocks: any[]): Promise<any[]> => {
-      let processedBlocks: any[] = [];
+    const processBlocks = async (blocks: unknown[]): Promise<unknown[]> => {
+      let processedBlocks: unknown[] = [];
       
       for (const block of blocks) {
         processedBlocks.push(block);
         
-        if (block.has_children) {
-          let childBlocks: any[] = [];
+        // Type assertion for Notion block
+        const notionBlock = block as { id: string; has_children: boolean };
+        
+        if (notionBlock.has_children) {
+          let childBlocks: unknown[] = [];
           let childHasMore = true;
           let childNextCursor: string | undefined;
           
           while (childHasMore) {
             const childResponse = await notion.blocks.children.list({
-              block_id: block.id,
+              block_id: notionBlock.id,
               start_cursor: childNextCursor,
               page_size: 100,
             });
@@ -342,8 +346,7 @@ function getColorClass(color: string): string {
 export default async function BlogDetail({
   params,
 }: {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  params: any;
+  params: Promise<{ title: string }>;
 }) {
   // Get the title directly - in Next.js 15 this is no longer a Promise
   const { title } = await params;
