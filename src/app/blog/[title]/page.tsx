@@ -73,6 +73,7 @@ export const revalidate = 300; // 5 minutes
 async function fetchBlogDetail(title: string): Promise<BlogDetail | null> {
   try {
     const decodedTitle = decodeURIComponent(title);
+    console.log("Fetching blog detail for title:", decodedTitle);
 
     const notion = new Client({
       auth: process.env.NOTION_TOKEN,
@@ -89,6 +90,8 @@ async function fetchBlogDetail(title: string): Promise<BlogDetail | null> {
       return null;
     }
 
+    console.log(`Found ${blogList.results.length} blog posts in database`);
+
     // Filter blogs to find one with a matching title (case insensitive)
     const matchingBlog = blogList.results.find((blog) => {
       const blogPage = blog as unknown as NotionPage;
@@ -99,8 +102,17 @@ async function fetchBlogDetail(title: string): Promise<BlogDetail | null> {
 
     if (!matchingBlog) {
       console.error(`Blog post with title "${decodedTitle}" not found`);
+      // Log available titles for debugging
+      const titles = blogList.results.map((blog: any) => {
+        const blogPage = blog as unknown as NotionPage;
+        const titleArr = blogPage.properties.Name.title;
+        return titleArr.length > 0 ? titleArr[0].plain_text : "Untitled";
+      });
+      console.log("Available blog titles:", titles);
       return null;
     }
+
+    console.log("Found matching blog:", matchingBlog.properties.Name.title[0].plain_text);
 
     // Fetch the page content with pagination
     const blockId = matchingBlog.id;
@@ -119,6 +131,42 @@ async function fetchBlogDetail(title: string): Promise<BlogDetail | null> {
       hasMore = response.has_more;
       nextCursor = response.next_cursor || undefined;
     }
+    
+    // Recursively fetch children for blocks that have them and insert them in the right place
+    const processBlocks = async (blocks: any[]): Promise<any[]> => {
+      let processedBlocks: any[] = [];
+      
+      for (const block of blocks) {
+        processedBlocks.push(block);
+        
+        if (block.has_children) {
+          let childBlocks: any[] = [];
+          let childHasMore = true;
+          let childNextCursor: string | undefined;
+          
+          while (childHasMore) {
+            const childResponse = await notion.blocks.children.list({
+              block_id: block.id,
+              start_cursor: childNextCursor,
+              page_size: 100,
+            });
+            
+            childBlocks = childBlocks.concat(childResponse.results);
+            childHasMore = childResponse.has_more;
+            childNextCursor = childResponse.next_cursor || undefined;
+          }
+          
+          // Process child blocks recursively and add them after the parent
+          const processedChildBlocks = await processBlocks(childBlocks);
+          processedBlocks = processedBlocks.concat(processedChildBlocks);
+        }
+      }
+      
+      return processedBlocks;
+    };
+    
+    // Process all blocks to include children in the correct order
+    allBlocks = await processBlocks(allBlocks);
 
     // Extract content from blocks with enhanced formatting
     const content = allBlocks.map((block) => {
@@ -187,7 +235,11 @@ async function fetchBlogDetail(title: string): Promise<BlogDetail | null> {
       } else if (typedBlock.type === 'code') {
         const language = typedBlock.code?.language || 'text';
         const codeContent = extractRichText(typedBlock.code?.rich_text);
-        return `\`\`\`${language}\n${codeContent}\n\`\`\``;
+        return `\`\`\`${language}
+${codeContent}
+\`\`\``;
+      } else if (typedBlock.type === 'quote') {
+        return `> ${extractRichText(typedBlock.quote?.rich_text)}`;
       }
       return '';
     }).filter(Boolean)
@@ -196,13 +248,15 @@ async function fetchBlogDetail(title: string): Promise<BlogDetail | null> {
     // Process ALL formatting here on the server
     const processedContent = processFormattedText(content);
 
-    return {
+    const result = {
       created_time: moment(matchingBlog.created_time).format("YYYY-MM-DD HH:mm"),
       title: matchingBlog.properties.Name.title[0].plain_text,
       icons: matchingBlog.properties.Icons.multi_select.map(({ name }) => name),
       platform: matchingBlog.properties.Platform.rich_text[0].plain_text,
       content: processedContent
     };
+    
+    return result;
   } catch (error) {
     console.error("Error fetching blog detail:", error);
     return null;
@@ -232,6 +286,10 @@ function processFormattedText(text: string) {
     // Images
     .replace(/!\[([^\]]*)\]\(([^)]+)\)/g,
       '\n<div class="flex justify-center my-4"><img src="$2" alt="$1" class="rounded-lg max-w-full" /></div>\n'
+    )
+    // Quotes
+    .replace(/^> (.*$)/gm,
+      '\n<blockquote class="border-l-4 border-gray-300 dark:border-gray-600 pl-4 py-2 my-4 text-gray-600 dark:text-gray-300">$1</blockquote>\n'
     )
     // Links
     .replace(/\[([^\]]+)\]\(([^)]+)\)/g,
